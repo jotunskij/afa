@@ -1,2 +1,2 @@
 # afa
-Fullstack home assignment
+server for AFA home assignment
