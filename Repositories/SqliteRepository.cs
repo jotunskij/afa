@@ -97,6 +97,31 @@ public class SqliteRepository : ILicenseRepository {
         }
     }
 
+    public License GetLicense(string licenseKey) {
+        using (var conn = new SqliteConnection("Data Source=database.db")) {
+            conn.Open();
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT licenseKey, rentedUntil, rentedBy
+                FROM Licenses
+                WHERE licenseKey = $licenseKey;
+            ";
+            cmd.Parameters.AddWithValue("$licenseKey", licenseKey);
+
+            var license = new License();
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    license.licenseKey = reader.GetString(0);
+                    license.rentedUntil = reader.IsDBNull(1) ? null : reader.GetDateTime(1);
+                    license.rentedBy = reader.IsDBNull(2) ? null : reader.GetString(2);
+                }
+            }
+            return license;
+        }
+    }
+
     public void UnrentLicense(string licenseKey) {
             using (var conn = new SqliteConnection("Data Source=database.db")) {
             conn.Open();

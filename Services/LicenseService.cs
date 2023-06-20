@@ -23,6 +23,12 @@ public class LicenseService : ILicenseService {
     }
 
     public License RentLicense(string licenseKey, string client) {
+        var existingLicense = repository.GetLicense(licenseKey);
+        
+        if (existingLicense.rentedBy != client) {
+            throw new LicenseException("License already rented by other client");
+        }
+
         var license = repository.RentLicense(licenseKey, client);
 
         // Schedule removal of license rent

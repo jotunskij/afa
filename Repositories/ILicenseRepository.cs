@@ -4,4 +4,5 @@ public interface ILicenseRepository {
     IEnumerable<License> GetLicenseStatuses();
     License RentLicense(string licenseKey, string client);
     void UnrentLicense(string licenseKey);
+    License GetLicense(string licenseKey);
 }

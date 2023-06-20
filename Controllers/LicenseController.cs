@@ -39,7 +39,11 @@ public class LicenseController : ControllerBase
 
     [HttpGet("rent", Name = "Rent license")]
     public ActionResult<License> RentLicense(string licenseKey, string client) {
+        try {
             return Ok(licenseService.RentLicense(licenseKey, client));
+        } catch (LicenseException le) {
+            return BadRequest(new { error = le.ErrorMessage });
+        }
     }
 
 
