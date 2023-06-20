@@ -7,6 +7,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Dependency injections
+builder.Services.AddScoped<ILicenseRepository, SqliteRepository>();
+builder.Services.AddScoped<ILicenseService, LicenseService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
