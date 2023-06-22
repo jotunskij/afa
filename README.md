@@ -1,8 +1,11 @@
-# afa
-server for AFA home assignment
+# afa-server
+Server for AFA home assignment
+
+## Description
+Server written in .NET due to being AFAs framework of choice
 
 ## To run
-Start debugging in VSCode
+Open & start debugging in VSCode
 
 ## TODO
 * Tests
