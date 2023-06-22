@@ -1,9 +1,11 @@
 public class LicenseService : ILicenseService {
 
     private readonly ILicenseRepository repository;
+    private readonly ILogger<LicenseService> logger;
 
-    public LicenseService(ILicenseRepository repository) {
+    public LicenseService(ILicenseRepository repository, ILogger<LicenseService> logger) {
         this.repository = repository;
+        this.logger = logger;
     }
 
     public License AddLicense(string licenseKey)
@@ -24,12 +26,23 @@ public class LicenseService : ILicenseService {
 
     public License RentLicense(string licenseKey, string client) {
         var existingLicense = repository.GetLicense(licenseKey);
+
+        if (existingLicense.licenseKey == null) {
+            throw new LicenseException("License does not exist");
+        }
         
-        if (existingLicense.rentedBy != client) {
+        if (existingLicense.rentedBy != null && existingLicense.rentedBy != client) {
             throw new LicenseException("License already rented by other client");
         }
 
+        var existingLease = repository.GetClientLease(client);
+
+        if (existingLease.licenseKey != null) {
+            throw new LicenseException("Client already has active lease");
+        }
+
         var license = repository.RentLicense(licenseKey, client);
+        logger.LogInformation($"Client {client} leased {licenseKey}");
 
         // Schedule removal of license rent
         // For production: replace with more appropriate framework
@@ -43,6 +56,7 @@ public class LicenseService : ILicenseService {
     private async Task UnrentLicense(string licenseKey) {
         await Task.Delay(15 * 1000);
         repository.UnrentLicense(licenseKey);
+        logger.LogInformation($"License {licenseKey} lease expired");
     }
 
 }

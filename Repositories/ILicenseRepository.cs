@@ -5,4 +5,5 @@ public interface ILicenseRepository {
     License RentLicense(string licenseKey, string client);
     void UnrentLicense(string licenseKey);
     License GetLicense(string licenseKey);
+    License GetClientLease(string client);
 }

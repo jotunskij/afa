@@ -10,9 +10,9 @@ using Microsoft.Data.Sqlite;
 
 public class SqliteRepository : ILicenseRepository {
 
-    private readonly ILogger _logger;
+    private readonly ILogger<SqliteRepository> _logger;
 
-    public SqliteRepository(ILogger logger) {
+    public SqliteRepository(ILogger<SqliteRepository> logger) {
         _logger = logger;
     }
 
@@ -56,7 +56,7 @@ public class SqliteRepository : ILicenseRepository {
             conn.Open();
             var cmd = conn.CreateCommand();
             cmd.CommandText = @"
-                SELECT licenseKey, rentedUntil
+                SELECT licenseKey, rentedUntil, rentedBy
                 FROM Licenses;
             ";
             var licenses = new List<License>();
@@ -66,7 +66,8 @@ public class SqliteRepository : ILicenseRepository {
                 {
                     licenses.Add(new License() {
                         licenseKey = reader.GetString(0),
-                        rentedUntil = reader.IsDBNull(1) ? null : reader.GetDateTime(1)
+                        rentedUntil = reader.IsDBNull(1) ? null : reader.GetDateTime(1),
+                        rentedBy = reader.IsDBNull(2) ? null : reader.GetString(2)
                     });
                 }
             }
@@ -94,6 +95,31 @@ public class SqliteRepository : ILicenseRepository {
                 rentedUntil = rentedUntil,
                 rentedBy = client
             };
+        }
+    }
+
+    public License GetClientLease(string client) {
+        using (var conn = new SqliteConnection("Data Source=database.db")) {
+            conn.Open();
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT licenseKey, rentedUntil, rentedBy
+                FROM Licenses
+                WHERE rentedBy = $client;
+            ";
+            cmd.Parameters.AddWithValue("$client", client);
+
+            var license = new License();
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    license.licenseKey = reader.GetString(0);
+                    license.rentedUntil = reader.IsDBNull(1) ? null : reader.GetDateTime(1);
+                    license.rentedBy = reader.IsDBNull(2) ? null : reader.GetString(2);
+                }
+            }
+            return license;
         }
     }
 
